@@ -10,290 +10,265 @@
         #gc { position: relative; width: 100%; height: 100%; background: #050a12; overflow: hidden; }
         canvas { display: block; width: 100%; height: 100%; }
         
-        /* UI 增强 */
-        #ui { position: absolute; top: 50px; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none; z-index: 10; opacity: 0; transition: 0.5s; }
-        .stat { background: rgba(0, 136, 255, 0.15); backdrop-filter: blur(12px); border: 1px solid rgba(0, 136, 255, 0.3); border-radius: 20px; padding: 6px 14px; font-size: 11px; color: #4db8ff; }
-        .stat span { color: #fff; font-weight: bold; margin-left: 4px; font-size: 14px; }
+        #ui { position: absolute; top: 50px; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 10px; pointer-events: none; z-index: 10; opacity: 0; transition: 0.8s; }
+        .stat { background: rgba(0, 136, 255, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(0, 136, 255, 0.3); border-radius: 25px; padding: 7px 18px; font-size: 11px; color: #4db8ff; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .stat span { color: #fff; font-weight: bold; margin-left: 5px; font-size: 15px; }
         
-        #btn-group { pointer-events: all; display: flex; gap: 8px; }
-        .icon-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+        #music-toggle { pointer-events: all; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
 
-        /* 菜单与弹窗 */
-        #menu { position: absolute; inset: 0; background: rgba(3,8,16,0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(15px); }
-        .mode-btn { width: 240px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,136,255,0.4); padding: 18px; border-radius: 18px; margin: 10px; text-align: center; cursor: pointer; }
-        
-        #msg, #check-panel, #skin-panel { position: absolute; inset: 0; background: rgba(3,8,16,0.98); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 150; text-align: center; backdrop-filter: blur(15px); }
-        
-        .grid { display: flex; gap: 15px; margin: 20px 0; }
-        .day { width: 60px; height: 70px; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; }
-        .day.active { background: #0088ff; color: #fff; }
+        #menu { position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(8, 20, 45, 1) 0%, rgba(2, 5, 12, 1) 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        #menu.hide { opacity: 0; transform: scale(1.1); pointer-events: none; }
+        #menu h1 { font-size: 42px; margin-bottom: 5px; text-shadow: 0 0 30px #0088ff; font-style: italic; font-weight: 900; letter-spacing: 4px; }
+        .subtitle { font-size: 12px; color: #4db8ff; letter-spacing: 6px; margin-bottom: 50px; opacity: 0.8; }
 
-        .skin-card { width: 100px; padding: 15px; border: 1px solid #333; border-radius: 15px; margin: 5px; }
-        .skin-card.owned { border-color: #0088ff; background: rgba(0,136,255,0.1); }
+        .mode-btn { width: 260px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,136,255,0.4); padding: 22px; border-radius: 20px; margin: 12px; text-align: center; cursor: pointer; }
+        .mode-btn h3 { font-size: 20px; margin-bottom: 6px; color: #fff; }
+        .mode-btn p { font-size: 11px; color: #7aafd4; }
+
+        #msg { position: absolute; inset: 0; background: rgba(2, 5, 12, 0.98); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 150; text-align: center; backdrop-filter: blur(20px); }
+        #msg h2 { font-size: 34px; margin-bottom: 10px; font-weight: 900; background: linear-gradient(to bottom, #fff, #0088ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #msg button { background: linear-gradient(135deg, #0088ff 0%, #0044bb 100%); color: #fff; border: none; border-radius: 40px; padding: 18px 80px; font-size: 18px; font-weight: 800; margin-top: 25px; box-shadow: 0 10px 30px rgba(0,136,255,0.4); }
         
-        #hint { position: absolute; bottom: 50px; width: 100%; text-align: center; color: rgba(77,184,255,0.3); font-size: 12px; pointer-events: none; }
+        #hint { position: absolute; bottom: 50px; width: 100%; text-align: center; color: rgba(77,184,255,0.3); font-size: 11px; letter-spacing: 3px; pointer-events: none; }
     </style>
 </head>
 <body>
 <div id="gc">
     <div id="menu">
-        <h1 style="letter-spacing: 3px; text-shadow: 0 0 20px #0088ff; margin-bottom: 30px;">SHARK DASH</h1>
-        <div class="mode-btn" onclick="startMode('endless')"><h3>无尽挑战</h3><p>深海极限纪录</p></div>
-        <div class="mode-btn" onclick="startMode('challenge')"><h3>关卡模式</h3><p id="level-info">加载中...</p></div>
-        <div style="margin-top: 20px; display: flex; gap: 20px;">
-            <div onclick="showPanel('check')">📅 签到</div>
-            <div onclick="showPanel('skin')">🐠 角色</div>
+        <h1>SHARK ⚡️ DASH</h1>
+        <div class="subtitle">Deep Sea Adventure</div>
+        <div class="mode-btn" onclick="startMode('endless')">
+            <h3>∞ 无尽模式</h3>
+            <p>探索深海极致纪录</p>
+        </div>
+        <div class="mode-btn" onclick="startMode('challenge')">
+            <h3>🏁 挑战模式</h3>
+            <p id="challenge-info">STAGE进度加载中...</p>
         </div>
     </div>
 
     <div id="ui">
-        <div id="btn-group">
-            <div class="icon-btn" onclick="location.reload()">🏠</div>
-            <div class="icon-btn" onclick="toggleMusic()">🔊</div>
-        </div>
+        <div id="music-toggle" onclick="toggleMusic()">🔊</div>
         <div class="stat"><span id="mode-label">ENDLESS</span></div>
-        <div class="stat">DEPTH <span id="sc">0</span></div>
-    </div>
-
-    <div id="check-panel">
-        <h2>深海签到</h2>
-        <p style="color: #7aafd4; font-size: 14px; margin-top: 10px;">连签3天领取【深海灯笼鱼】</p>
-        <div class="grid" id="check-grid"></div>
-        <button onclick="doCheck()" id="check-btn" style="background:#0088ff; color:#fff; border:none; padding:12px 40px; border-radius:20px;">立即签到</button>
-        <p onclick="closePanels()" style="margin-top:30px; opacity:0.5;">返回</p>
-    </div>
-
-    <div id="skin-panel">
-        <h2>角色选择</h2>
-        <div class="grid" id="skin-list"></div>
-        <p onclick="closePanels()" style="margin-top:30px; opacity:0.5;">返回</p>
+        <div class="stat">DEPTH<span id="sc">0</span></div>
+        <div class="stat">BEST<span id="bs">0</span></div>
     </div>
 
     <canvas id="cv"></canvas>
 
     <div id="msg">
-        <h2 id="mt">LOST</h2>
-        <p id="mb">游戏结束</p>
-        <button onclick="handleMsgBtn()" style="background:#0088ff; color:#fff; border:none; padding:15px 50px; border-radius:30px;">继续</button>
+        <h2 id="mt">SHARK LOST</h2>
+        <p id="mb">迷失在深渊...</p>
+        <button onclick="handleMsgBtn()">继续挑战</button>
+        <div style="margin-top: 30px; font-size: 14px; color: #444; text-decoration: underline;" onclick="location.reload()">返回菜单</div>
     </div>
     
-    <div id="hint">点触原地跳 · 长按蓄力跳</div>
+    <div id="hint">点触起跳 · 长按蓄力冲刺</div>
 </div>
 
 <script>
 /**
- * ⚡️ 闪电鲨 v17 精准跳跃与签到系统
+ * ⚡️ 闪电鲨 v1.17 物理引擎重调版
  */
 const cv = document.getElementById('cv'), cx = cv.getContext('2d');
-const scEl = document.getElementById('sc'), msg = document.getElementById('msg');
+const scEl = document.getElementById('sc'), bsEl = document.getElementById('bs'), msg = document.getElementById('msg'), mt = document.getElementById('mt'), mb = document.getElementById('mb');
 
 let W, H, time = 0, gameState = 'menu', gameMode = 'endless';
-let score = 0, best = 0, currentLevel = 1, currentSkin = 'shark';
+let score = 0, best = 0, currentLevel = 1, targetScore = 0;
 let holding = false, holdStart = 0;
 let tanks = [], shark, particles = [], camX = 0, targetCamX = 0;
 
-// 音频
+// 音效系统
 let audioCtx, musicGain, isMusicOn = true;
-
 function initAudio() {
     if(!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         musicGain = audioCtx.createGain();
-        musicGain.gain.value = 0.1;
+        musicGain.gain.value = 0.12;
         musicGain.connect(audioCtx.destination);
         const osc = audioCtx.createOscillator();
-        osc.type = 'triangle'; osc.frequency.value = 55;
-        osc.connect(musicGain); osc.start();
+        const lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(55, audioCtx.currentTime);
+        lfo.frequency.value = 0.4; lfoGain.gain.value = 8;
+        lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+        osc.connect(musicGain); lfo.start(); osc.start();
     }
 }
-
 function toggleMusic() {
     isMusicOn = !isMusicOn;
-    if(musicGain) musicGain.gain.setTargetAtTime(isMusicOn ? 0.1 : 0, audioCtx.currentTime, 0.1);
+    document.getElementById('music-toggle').textContent = isMusicOn ? '🔊' : '🔇';
+    if(musicGain) musicGain.gain.setTargetAtTime(isMusicOn ? 0.12 : 0, audioCtx.currentTime, 0.1);
 }
-
-function playSfx(f1, f2, d) {
-    if(!audioCtx) return;
+function playSfx(f1, f2, d, g=0.1) {
+    if(!audioCtx || audioCtx.state === 'suspended') return;
     const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.frequency.setValueAtTime(f1, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(f2, audioCtx.currentTime + d);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.setValueAtTime(g, audioCtx.currentTime);
     gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + d);
     osc.start(); osc.stop(audioCtx.currentTime + d);
 }
 
-// 签到与角色逻辑
-let checkData = JSON.parse(localStorage.getItem('shark_check_v2')) || { last: null, count: 0, skins: ['shark'] };
-
-function updateCheckUI() {
-    const grid = document.getElementById('check-grid');
-    grid.innerHTML = '';
-    for(let i=1; i<=3; i++) {
-        const d = document.createElement('div');
-        d.className = `day ${i <= checkData.count ? 'active' : ''}`;
-        d.innerHTML = `<span>DAY</span><b>${i}</b>`;
-        grid.appendChild(d);
-    }
-    const today = new Date().toDateString();
-    document.getElementById('check-btn').disabled = (checkData.last === today);
-    document.getElementById('check-btn').innerText = (checkData.last === today) ? '今日已签' : '立即签到';
-}
-
-function doCheck() {
-    const today = new Date().toDateString();
-    if(checkData.last === today) return;
-    
-    // 检查是否是连续签到
-    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-    if(checkData.last === yesterday.toDateString()) {
-        checkData.count++;
-    } else {
-        checkData.count = 1; // 断签重置
-    }
-    
-    checkData.last = today;
-    if(checkData.count >= 3 && !checkData.skins.includes('fish')) {
-        checkData.skins.push('fish');
-        alert('🎉 连签3天！解锁新角色：深海灯笼鱼！');
-    }
-    localStorage.setItem('shark_check_v2', JSON.stringify(checkData));
-    updateCheckUI();
-    updateSkinUI();
-}
-
-function updateSkinUI() {
-    const list = document.getElementById('skin-list');
-    list.innerHTML = '';
-    const skins = [
-        { id: 'shark', name: '闪电鲨', icon: '⚡️' },
-        { id: 'fish', name: '灯笼鱼', icon: '💡' }
-    ];
-    skins.forEach(s => {
-        const owned = checkData.skins.includes(s.id);
-        const card = document.createElement('div');
-        card.className = `skin-card ${owned ? 'owned' : ''}`;
-        card.innerHTML = `<div style="font-size:30px">${s.icon}</div><div style="font-size:12px">${s.name}</div>`;
-        if(owned) card.onclick = () => { currentSkin = s.id; closePanels(); };
-        list.appendChild(card);
-    });
-}
-
-function showPanel(id) {
-    if(id === 'check') updateCheckUI();
-    if(id === 'skin') updateSkinUI();
-    document.getElementById(id + '-panel').style.display = 'flex';
-}
-
-function closePanels() {
-    document.getElementById('check-panel').style.display = 'none';
-    document.getElementById('skin-panel').style.display = 'none';
-}
-
-// 核心游戏逻辑
 function resize() {
     W = window.innerWidth; H = window.innerHeight;
-    cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio;
-    cx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 window.addEventListener('resize', resize); resize();
 
+const THEMES = [
+    { r: [1, 10], bg: ['#020509', '#081326'], water: '#00ccff' },
+    { r: [11, 20], bg: ['#010c0b', '#052a26'], water: '#00ffaa' },
+    { r: [21, 30], bg: ['#0d0212', '#2a053d'], water: '#bb66ff' },
+    { r: [31, 40], bg: ['#120202', '#3d0505'], water: '#ff4400' }
+];
+
+function getTheme() {
+    const lv = gameMode === 'challenge' ? currentLevel : 1;
+    return THEMES.find(t => lv >= t.r[0] && lv <= t.r[1]) || THEMES[0];
+}
+
 function makeTank(x) {
-    const w = W * 0.22, h = H * 0.12;
-    return { x, y: H - h - 120, w, h, color: '#00ccff', offset: Math.random()*20 };
+    const theme = getTheme();
+    let baseW = W * 0.25, baseH = H * 0.12;
+    if(gameMode === 'challenge') baseW -= Math.min(currentLevel * 1.5, baseW * 0.4);
+    return { x, y: H - baseH - 120, w: Math.max(baseW, 55), h: baseH, color: theme.water, offset: Math.random()*50 };
 }
 
 function spawnNext() {
     const last = tanks[tanks.length-1];
-    const gap = W * (0.35 + Math.random() * 0.4);
+    let minG = W * 0.38, maxG = W * 0.55;
+    if(gameMode === 'challenge') {
+        minG += Math.min(currentLevel * 2, W * 0.2);
+        maxG += Math.min(currentLevel * 3, W * 0.25);
+    }
+    const gap = minG + Math.random() * (maxG - minG);
     tanks.push(makeTank(last.x + last.w + gap));
 }
 
 function startMode(mode) {
     initAudio();
     gameMode = mode;
-    document.getElementById('menu').style.display = 'none';
-    document.getElementById('ui').style.opacity = '1';
+    document.getElementById('menu').classList.add('hide');
+    setTimeout(() => {
+        document.getElementById('ui').style.opacity = '1';
+        document.getElementById('mode-label').textContent = mode === 'endless' ? 'ENDLESS' : `STAGE ${currentLevel}`;
+    }, 400);
+
     if(mode === 'challenge') {
         currentLevel = parseInt(localStorage.getItem('shark_level')) || 1;
+        targetScore = 3 + Math.floor(currentLevel/2);
+    } else {
+        best = localStorage.getItem('shark_best') || 0;
+        bsEl.textContent = best;
     }
+    gameState = 'playing';
     initGame();
 }
 
 function initGame() {
-    score = 0; tanks = [makeTank(W * 0.12)];
+    score = 0; scEl.textContent = 0;
+    tanks = [makeTank(W * 0.12)];
     for(let i=0; i<5; i++) spawnNext();
-    shark = { x: tanks[0].x + tanks[0].w/2, y: tanks[0].y - 15, vx: 0, vy: 0, ang: 0, tail: 0 };
-    camX = 0; targetCamX = 0; particles = []; gameState = 'playing';
+    shark = { x: tanks[0].x + tanks[0].w/2, y: tanks[0].y - 12, vx: 0, vy: 0, angle: 0, tail: 0 };
+    camX = 0; targetCamX = 0; particles = [];
     msg.style.display = 'none';
 }
 
-function drawPlayer(x, y, ang, tail, isIdle) {
-    cx.save();
-    const swim = isIdle ? Math.sin(time*0.1)*4 : 0;
-    cx.translate(x, y + swim); cx.rotate(ang);
-    cx.shadowBlur = 15; cx.shadowColor = '#00ccff';
-
-    if(currentSkin === 'shark') {
-        // 鲨鱼绘制
-        cx.fillStyle = '#1a75ff';
-        cx.beginPath(); cx.ellipse(0, 0, 20, 9, 0, 0, Math.PI*2); cx.fill();
-        cx.beginPath(); cx.moveTo(-4, -7); cx.quadraticCurveTo(2, -15, 9, -5); cx.fill();
-        const tw = Math.sin(tail)*5;
-        cx.beginPath(); cx.moveTo(-16, 0); cx.lineTo(-28, -9+tw); cx.lineTo(-24, 0); cx.lineTo(-28, 9+tw); cx.fill();
+function handleMsgBtn() {
+    if(mt.textContent === 'LEVEL CLEAR') {
+        currentLevel++; localStorage.setItem('shark_level', currentLevel);
+        startMode('challenge');
     } else {
-        // 灯笼鱼绘制
-        cx.fillStyle = '#445577';
-        cx.beginPath(); cx.arc(0, 0, 14, 0, Math.PI*2); cx.fill();
-        // 灯笼
-        cx.strokeStyle = '#fff'; cx.lineWidth = 1;
-        cx.beginPath(); cx.moveTo(5, -10); cx.quadraticCurveTo(15, -20, 20, -10); cx.stroke();
-        cx.fillStyle = '#ffff00'; cx.shadowColor = '#ffff00';
-        cx.beginPath(); cx.arc(20, -10, 4, 0, Math.PI*2); cx.fill();
-        // 尾巴
-        cx.fillStyle = '#445577';
-        const tw = Math.sin(tail)*5;
-        cx.beginPath(); cx.moveTo(-12, 0); cx.lineTo(-22, -8+tw); cx.lineTo(-22, 8+tw); cx.fill();
+        initGame(); gameState = 'playing';
     }
-    
-    cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(8, -2, 2, 0, Math.PI*2); cx.fill();
+}
+
+function drawShark(x, y, ang, tail, isIdle) {
+    cx.save();
+    const swim = isIdle ? Math.sin(time*0.1)*3.5 : 0;
+    cx.translate(x, y + swim); cx.rotate(ang);
+    const theme = getTheme();
+    cx.fillStyle = '#1a75ff'; cx.shadowBlur = 18; cx.shadowColor = theme.water;
+    cx.beginPath(); cx.ellipse(0, 0, 22, 10, 0, 0, Math.PI*2); cx.fill();
+    cx.beginPath(); cx.moveTo(-2, -8); cx.quadraticCurveTo(3, -16, 11, -5); cx.fill();
+    const tw = Math.sin(tail) * 5;
+    cx.beginPath(); cx.moveTo(-16, 0); cx.lineTo(-28, -9+tw); cx.lineTo(-24, 0); cx.lineTo(-28, 9+tw); cx.fill();
+    cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(11, -2, 2, 0, Math.PI*2); cx.fill();
     cx.restore();
 }
 
 function draw() {
     time++;
-    cx.fillStyle = '#050a12'; cx.fillRect(0,0,W,H);
-    
+    const theme = getTheme();
+    const bgGrd = cx.createLinearGradient(0,0,0,H);
+    bgGrd.addColorStop(0, theme.bg[0]); bgGrd.addColorStop(1, theme.bg[1]);
+    cx.fillStyle = bgGrd; cx.fillRect(0,0,W,H);
+
     if(gameState === 'playing') {
         if(shark.vx !== 0 || shark.vy !== 0) {
-            shark.x += shark.vx; shark.y += shark.vy; shark.vy += 0.5;
-            shark.ang = Math.atan2(shark.vy, shark.vx);
-            shark.tail += 0.4;
+            shark.x += shark.vx; shark.y += shark.vy; 
+            shark.vy += 0.58; // 增加重力，手感更扎实
+            shark.vx *= 0.995; // 增加微弱空气阻力
+            
+            shark.angle = Math.atan2(shark.vy, shark.vx);
+            shark.tail += 0.45;
             targetCamX = Math.max(camX, shark.x - W * 0.35);
 
             tanks.forEach((t, i) => {
                 if(shark.vy > 0 && shark.x > t.x && shark.x < t.x+t.w && shark.y > t.y-10 && shark.y < t.y+30) {
-                    playSfx(160, 80, 0.2);
-                    shark.y = t.y - 12; shark.vx = 0; shark.vy = 0; shark.ang = 0;
-                    if(i > 0) { score += i; scEl.textContent = score; tanks.splice(0, i); while(tanks.length<5) spawnNext(); }
+                    playSfx(160, 80, 0.2, 0.3);
+                    for(let k=0; k<12; k++) particles.push({x:shark.x, y:t.y, vx:(Math.random()-0.5)*5, vy:-Math.random()*4, o:1});
+                    shark.y = t.y - 12; shark.vx = 0; shark.vy = 0; shark.angle = 0;
+                    if(i > 0) {
+                        score += i; scEl.textContent = score;
+                        if(gameMode === 'endless') {
+                            if(score > best) { best=score; bsEl.textContent=best; localStorage.setItem('shark_best', best); }
+                        } else if(score >= targetScore) {
+                            gameState = 'win'; mt.textContent = 'LEVEL CLEAR'; mb.textContent = `成功突破第 ${currentLevel} 海域！`; msg.style.display = 'flex';
+                        }
+                        tanks.splice(0, i); while(tanks.length<6) spawnNext();
+                    }
                 }
             });
-            if(shark.y > H + 50 || shark.x < camX - 100) { gameState = 'dead'; msg.style.display = 'flex'; }
+            if(shark.y > H + 80 || shark.x < camX - 120) {
+                gameState = 'dead'; mt.textContent = 'SHARK LOST'; mb.textContent = `在深海 ${score}m 处迷航...`; msg.style.display = 'flex';
+            }
         } else { shark.tail += 0.08; }
+        camX += (targetCamX - camX) * 0.1;
     }
-    
-    camX += (targetCamX - camX) * 0.1;
+
     cx.save(); cx.translate(-camX, 0);
     tanks.forEach(t => {
-        cx.strokeStyle = t.color; cx.lineWidth = 3; cx.strokeRect(t.x, t.y, t.w, t.h);
-        cx.fillStyle = 'rgba(0,204,255,0.1)'; cx.fillRect(t.x, t.y+5, t.w, t.h-5);
+        cx.strokeStyle = t.color; cx.lineWidth = 3; cx.shadowBlur = 12; cx.shadowColor = t.color;
+        cx.strokeRect(t.x, t.y, t.w, t.h);
+        cx.save(); cx.beginPath(); cx.rect(t.x, t.y, t.w, t.h); cx.clip();
+        cx.fillStyle = 'rgba(255,255,255,0.1)';
+        cx.beginPath(); cx.moveTo(t.x, t.y + t.h);
+        for(let tx=0; tx<=t.w; tx+=6) {
+            const ty = Math.sin(tx*0.06 + time*0.06 + t.offset) * 4;
+            cx.lineTo(t.x + tx, t.y + 10 + ty);
+        }
+        cx.lineTo(t.x+t.w, t.y+t.h); cx.fill();
+        cx.restore();
     });
-    drawPlayer(shark.x, shark.y, shark.ang, shark.tail, shark.vx===0);
+    
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.o -= 0.025;
+        if(p.o <= 0) particles.splice(i, 1);
+        cx.fillStyle = `rgba(255,255,255,${p.o})`;
+        cx.beginPath(); cx.arc(p.x, p.y, 2.5, 0, Math.PI*2); cx.fill();
+    });
+    if(shark && gameState !== 'menu') drawShark(shark.x, shark.y, shark.angle, shark.tail, shark.vx===0);
     cx.restore();
 
     if(holding) {
         const p = Math.min((Date.now()-holdStart)/1400, 1);
-        cx.fillStyle = '#0088ff'; cx.fillRect(0, H-5, W*p, 5);
+        cx.fillStyle = theme.water; cx.shadowBlur = 10; cx.shadowColor = theme.water;
+        cx.fillRect(0, H-5, W*p, 5);
     }
     requestAnimationFrame(draw);
 }
@@ -304,16 +279,17 @@ const sHold = (e) => {
 };
 const eHold = () => {
     if(holding) {
-        holding = false;
-        const dur = Date.now() - holdStart;
-        playSfx(220, 450, 0.15);
+        holding = false; playSfx(220, 450, 0.15, 0.2);
+        const ratio = Math.min((Date.now()-holdStart)/1400, 1);
         
-        // 优化：力度映射曲线，dur很小时vx几乎为0
-        const p = Math.min(dur/1400, 1);
-        const powerX = p < 0.1 ? 0.005 : p; // 极短时间按压不提供水平动力
+        // 核心优化：物理动力学公式重调
+        // 基础起跳分量（极小）+ 指数增长分量（蓄力效果）
+        const power = Math.pow(ratio, 1.5); // 使用 1.5 次方，让蓄力前段更平缓，后段更猛
         
-        shark.vx = W * 0.01 * (powerX * 4); 
-        shark.vy = -H * 0.012 - (p * H * 0.02);
+        shark.vx = W*0.005 + power * (W*0.035); // 基础前推极小，满蓄力保持合理范围
+        shark.vy = -H*0.012 - power * (H*0.018); // 垂直高度也随蓄力增加
+        
+        gameState = 'flying';
     }
 };
 
@@ -322,12 +298,8 @@ window.addEventListener('touchend', eHold);
 cv.addEventListener('mousedown', sHold);
 window.addEventListener('mouseup', eHold);
 
-function handleMsgBtn() { initGame(); }
-
-// 初始UI
-updateCheckUI(); updateSkinUI();
 const savedL = localStorage.getItem('shark_level') || 1;
-document.getElementById('level-info').textContent = `当前进度：STAGE ${savedL}`;
+document.getElementById('challenge-info').textContent = `当前进度：STAGE ${savedL}`;
 
 draw();
 </script>
