@@ -10,13 +10,12 @@
         #gc { position: relative; width: 100%; height: 100%; background: #050a12; overflow: hidden; }
         canvas { display: block; width: 100%; height: 100%; }
         #ui { position: absolute; top: 50px; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 10px; pointer-events: none; z-index: 10; opacity: 0; transition: 0.8s; }
-        .stat { background: rgba(0, 136, 255, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(0, 136, 255, 0.3); border-radius: 25px; padding: 7px 18px; font-size: 11px; color: #4db8ff; }
+        .stat { background: rgba(0, 136, 255, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(0, 136, 255, 0.3); border-radius: 25px; padding: 7px 18px; font-size: 11px; color: #4db8ff; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         .stat span { color: #fff; font-weight: bold; margin-left: 5px; font-size: 15px; }
         #music-toggle { pointer-events: all; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
-        #menu { position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(8, 20, 45, 1) 0%, rgba(2, 5, 12, 1) 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        #menu { position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(8, 20, 45, 1) 0%, rgba(2, 5, 12, 1) 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; transition: 0.6s; }
         #menu.hide { opacity: 0; transform: scale(1.1); pointer-events: none; }
         #menu h1 { font-size: 42px; margin-bottom: 5px; text-shadow: 0 0 30px #0088ff; font-style: italic; font-weight: 900; letter-spacing: 4px; }
-        .subtitle { font-size: 12px; color: #4db8ff; letter-spacing: 6px; margin-bottom: 50px; opacity: 0.8; }
         .mode-btn { width: 260px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,136,255,0.4); padding: 22px; border-radius: 20px; margin: 12px; text-align: center; cursor: pointer; }
         #msg { position: absolute; inset: 0; background: rgba(2, 5, 12, 0.98); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 150; text-align: center; backdrop-filter: blur(20px); }
         #msg h2 { font-size: 34px; margin-bottom: 10px; font-weight: 900; background: linear-gradient(to bottom, #fff, #0088ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -28,15 +27,9 @@
 <div id="gc">
     <div id="menu">
         <h1>SHARK ⚡️ DASH</h1>
-        <div class="subtitle">Deep Sea Adventure</div>
-        <div class="mode-btn" onclick="startMode('endless')">
-            <h3>∞ 无尽模式</h3>
-            <p>探索深海极致纪录</p>
-        </div>
-        <div class="mode-btn" onclick="startMode('challenge')">
-            <h3>🏁 挑战模式</h3>
-            <p id="challenge-info">STAGE进度加载中...</p>
-        </div>
+        <div style="font-size: 12px; color: #4db8ff; letter-spacing: 6px; margin-bottom: 50px; opacity: 0.8;">Deep Sea Adventure</div>
+        <div class="mode-btn" onclick="startMode('endless')"><h3>∞ 无尽模式</h3><p>探索深海极致纪录</p></div>
+        <div class="mode-btn" onclick="startMode('challenge')"><h3>🏁 挑战模式</h3><p id="challenge-info">进度加载中...</p></div>
     </div>
     <div id="ui">
         <div id="music-toggle" onclick="toggleMusic()">🔊</div>
@@ -55,9 +48,6 @@
 </div>
 
 <script>
-/**
- * ⚡️ 闪电鲨 v1.17b 物理重构 - 蓄力抖动 + 灵敏起跳
- */
 const cv = document.getElementById('cv'), cx = cv.getContext('2d');
 const scEl = document.getElementById('sc'), bsEl = document.getElementById('bs'), msg = document.getElementById('msg'), mt = document.getElementById('mt'), mb = document.getElementById('mb');
 
@@ -157,12 +147,10 @@ function handleMsgBtn() {
 
 function drawShark(x, y, ang, tail, isIdle, isHolding) {
     cx.save();
-    // 核心优化：蓄力时的抖动效果
     let shakeX = 0, shakeY = 0;
     if (isHolding) {
         const p = Math.min((Date.now() - holdStart) / 1400, 1);
-        shakeX = (Math.random() - 0.5) * p * 6;
-        shakeY = (Math.random() - 0.5) * p * 6;
+        shakeX = (Math.random() - 0.5) * p * 6; shakeY = (Math.random() - 0.5) * p * 6;
     }
     const swim = isIdle ? Math.sin(time*0.1)*3.5 : 0;
     cx.translate(x + shakeX, y + swim + shakeY); cx.rotate(ang);
@@ -241,15 +229,22 @@ function draw() {
     requestAnimationFrame(draw);
 }
 
-const sHold = (e) => { if(e.type==='touchstart') e.preventDefault(); if(gameState === 'playing' && shark.vx === 0) { holding = true; holdStart = Date.now(); } };
+// 核心输入监听加固
+const sHold = (e) => { 
+    if(e.type==='touchstart') e.preventDefault(); 
+    if(gameState === 'playing' && shark.vx === 0) { 
+        holding = true; holdStart = Date.now(); 
+        if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+    } 
+};
 const eHold = () => {
     if(holding) {
         holding = false; playSfx(220, 450, 0.15, 0.2);
         const duration = Date.now() - holdStart;
         const ratio = Math.min(duration / 1400, 1);
-        // 核心优化：起跳动力学重写。保底速度降低，蓄力权重提升，手感更像“跳一跳”
-        shark.vx = W * 0.012 + (ratio * ratio) * (W * 0.04); 
-        shark.vy = -H * 0.012 - ratio * (H * 0.02);
+        // 核心加固：保证必跳的初速度设定
+        shark.vx = W * 0.015 + ratio * (W * 0.038); 
+        shark.vy = -H * 0.015 - ratio * (H * 0.022);
         gameState = 'flying';
     }
 };
