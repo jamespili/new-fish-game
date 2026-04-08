@@ -9,26 +9,20 @@
         body { background: #010408; height: 100vh; overflow: hidden; font-family: -apple-system, sans-serif; color: #fff; position: fixed; width: 100%; }
         #gc { position: relative; width: 100%; height: 100%; background: #050a12; overflow: hidden; }
         canvas { display: block; width: 100%; height: 100%; }
-        
         #ui { position: absolute; top: 50px; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 10px; pointer-events: none; z-index: 10; opacity: 0; transition: 0.8s; }
-        .stat { background: rgba(0, 136, 255, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(0, 136, 255, 0.3); border-radius: 25px; padding: 7px 18px; font-size: 11px; color: #4db8ff; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .stat { background: rgba(0, 136, 255, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(0, 136, 255, 0.3); border-radius: 25px; padding: 7px 18px; font-size: 11px; color: #4db8ff; }
         .stat span { color: #fff; font-weight: bold; margin-left: 5px; font-size: 15px; }
-        
         #music-toggle { pointer-events: all; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
-
         #menu { position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(8, 20, 45, 1) 0%, rgba(2, 5, 12, 1) 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         #menu.hide { opacity: 0; transform: scale(1.1); pointer-events: none; }
         #menu h1 { font-size: 42px; margin-bottom: 5px; text-shadow: 0 0 30px #0088ff; font-style: italic; font-weight: 900; letter-spacing: 4px; }
         .subtitle { font-size: 12px; color: #4db8ff; letter-spacing: 6px; margin-bottom: 50px; opacity: 0.8; }
-
         .mode-btn { width: 260px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,136,255,0.4); padding: 22px; border-radius: 20px; margin: 12px; text-align: center; cursor: pointer; }
         .mode-btn h3 { font-size: 20px; margin-bottom: 6px; color: #fff; }
         .mode-btn p { font-size: 11px; color: #7aafd4; }
-
         #msg { position: absolute; inset: 0; background: rgba(2, 5, 12, 0.98); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 150; text-align: center; backdrop-filter: blur(20px); }
         #msg h2 { font-size: 34px; margin-bottom: 10px; font-weight: 900; background: linear-gradient(to bottom, #fff, #0088ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         #msg button { background: linear-gradient(135deg, #0088ff 0%, #0044bb 100%); color: #fff; border: none; border-radius: 40px; padding: 18px 80px; font-size: 18px; font-weight: 800; margin-top: 25px; box-shadow: 0 10px 30px rgba(0,136,255,0.4); }
-        
         #hint { position: absolute; bottom: 50px; width: 100%; text-align: center; color: rgba(77,184,255,0.3); font-size: 11px; letter-spacing: 3px; pointer-events: none; }
     </style>
 </head>
@@ -46,29 +40,25 @@
             <p id="challenge-info">STAGE进度加载中...</p>
         </div>
     </div>
-
     <div id="ui">
         <div id="music-toggle" onclick="toggleMusic()">🔊</div>
         <div class="stat"><span id="mode-label">ENDLESS</span></div>
         <div class="stat">DEPTH<span id="sc">0</span></div>
         <div class="stat">BEST<span id="bs">0</span></div>
     </div>
-
     <canvas id="cv"></canvas>
-
     <div id="msg">
         <h2 id="mt">SHARK LOST</h2>
         <p id="mb">迷失在深渊...</p>
         <button onclick="handleMsgBtn()">继续挑战</button>
         <div style="margin-top: 30px; font-size: 14px; color: #444; text-decoration: underline;" onclick="location.reload()">返回菜单</div>
     </div>
-    
     <div id="hint">点触起跳 · 长按蓄力冲刺</div>
 </div>
 
 <script>
 /**
- * ⚡️ 闪电鲨 v1.17 物理引擎重调版
+ * ⚡️ 闪电鲨 v1.18 修复“不跳”问题 + 操控微调
  */
 const cv = document.getElementById('cv'), cx = cv.getContext('2d');
 const scEl = document.getElementById('sc'), bsEl = document.getElementById('bs'), msg = document.getElementById('msg'), mt = document.getElementById('mt'), mb = document.getElementById('mb');
@@ -78,22 +68,19 @@ let score = 0, best = 0, currentLevel = 1, targetScore = 0;
 let holding = false, holdStart = 0;
 let tanks = [], shark, particles = [], camX = 0, targetCamX = 0;
 
-// 音效系统
 let audioCtx, musicGain, isMusicOn = true;
 function initAudio() {
-    if(!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        musicGain = audioCtx.createGain();
-        musicGain.gain.value = 0.12;
-        musicGain.connect(audioCtx.destination);
-        const osc = audioCtx.createOscillator();
-        const lfo = audioCtx.createOscillator();
-        const lfoGain = audioCtx.createGain();
-        osc.type = 'triangle'; osc.frequency.setValueAtTime(55, audioCtx.currentTime);
-        lfo.frequency.value = 0.4; lfoGain.gain.value = 8;
-        lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
-        osc.connect(musicGain); lfo.start(); osc.start();
-    }
+    try {
+        if(!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            musicGain = audioCtx.createGain();
+            musicGain.gain.value = 0.12;
+            musicGain.connect(audioCtx.destination);
+            const osc = audioCtx.createOscillator();
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(55, audioCtx.currentTime);
+            osc.connect(musicGain); osc.start();
+        }
+    } catch(e) {}
 }
 function toggleMusic() {
     isMusicOn = !isMusicOn;
@@ -102,13 +89,15 @@ function toggleMusic() {
 }
 function playSfx(f1, f2, d, g=0.1) {
     if(!audioCtx || audioCtx.state === 'suspended') return;
-    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.setValueAtTime(f1, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(f2, audioCtx.currentTime + d);
-    gain.gain.setValueAtTime(g, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + d);
-    osc.start(); osc.stop(audioCtx.currentTime + d);
+    try {
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(f1, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(f2, audioCtx.currentTime + d);
+        gain.gain.setValueAtTime(g, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + d);
+        osc.start(); osc.stop(audioCtx.currentTime + d);
+    } catch(e) {}
 }
 
 function resize() {
@@ -157,7 +146,6 @@ function startMode(mode) {
         document.getElementById('ui').style.opacity = '1';
         document.getElementById('mode-label').textContent = mode === 'endless' ? 'ENDLESS' : `STAGE ${currentLevel}`;
     }, 400);
-
     if(mode === 'challenge') {
         currentLevel = parseInt(localStorage.getItem('shark_level')) || 1;
         targetScore = 3 + Math.floor(currentLevel/2);
@@ -207,17 +195,12 @@ function draw() {
     const bgGrd = cx.createLinearGradient(0,0,0,H);
     bgGrd.addColorStop(0, theme.bg[0]); bgGrd.addColorStop(1, theme.bg[1]);
     cx.fillStyle = bgGrd; cx.fillRect(0,0,W,H);
-
     if(gameState === 'playing') {
         if(shark.vx !== 0 || shark.vy !== 0) {
             shark.x += shark.vx; shark.y += shark.vy; 
-            shark.vy += 0.58; // 增加重力，手感更扎实
-            shark.vx *= 0.995; // 增加微弱空气阻力
-            
-            shark.angle = Math.atan2(shark.vy, shark.vx);
-            shark.tail += 0.45;
+            shark.vy += 0.58; shark.vx *= 0.995;
+            shark.angle = Math.atan2(shark.vy, shark.vx); shark.tail += 0.45;
             targetCamX = Math.max(camX, shark.x - W * 0.35);
-
             tanks.forEach((t, i) => {
                 if(shark.vy > 0 && shark.x > t.x && shark.x < t.x+t.w && shark.y > t.y-10 && shark.y < t.y+30) {
                     playSfx(160, 80, 0.2, 0.3);
@@ -240,7 +223,6 @@ function draw() {
         } else { shark.tail += 0.08; }
         camX += (targetCamX - camX) * 0.1;
     }
-
     cx.save(); cx.translate(-camX, 0);
     tanks.forEach(t => {
         cx.strokeStyle = t.color; cx.lineWidth = 3; cx.shadowBlur = 12; cx.shadowColor = t.color;
@@ -255,7 +237,6 @@ function draw() {
         cx.lineTo(t.x+t.w, t.y+t.h); cx.fill();
         cx.restore();
     });
-    
     particles.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy; p.o -= 0.025;
         if(p.o <= 0) particles.splice(i, 1);
@@ -264,31 +245,29 @@ function draw() {
     });
     if(shark && gameState !== 'menu') drawShark(shark.x, shark.y, shark.angle, shark.tail, shark.vx===0);
     cx.restore();
-
     if(holding) {
         const p = Math.min((Date.now()-holdStart)/1400, 1);
         cx.fillStyle = theme.water; cx.shadowBlur = 10; cx.shadowColor = theme.water;
-        cx.fillRect(0, H-5, W*p, 5);
+        cx.fillRect(0, H-4, W*p, 4);
     }
     requestAnimationFrame(draw);
 }
 
 const sHold = (e) => {
     if(e.type==='touchstart') e.preventDefault();
-    if(gameState === 'playing' && shark.vx === 0) { holding = true; holdStart = Date.now(); }
+    if(gameState === 'playing' && shark.vx === 0) { 
+        holding = true; holdStart = Date.now(); 
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }
 };
 const eHold = () => {
     if(holding) {
         holding = false; playSfx(220, 450, 0.15, 0.2);
         const ratio = Math.min((Date.now()-holdStart)/1400, 1);
-        
-        // 核心优化：物理动力学公式重调
-        // 基础起跳分量（极小）+ 指数增长分量（蓄力效果）
-        const power = Math.pow(ratio, 1.5); // 使用 1.5 次方，让蓄力前段更平缓，后段更猛
-        
-        shark.vx = W*0.005 + power * (W*0.035); // 基础前推极小，满蓄力保持合理范围
-        shark.vy = -H*0.012 - power * (H*0.018); // 垂直高度也随蓄力增加
-        
+        // 核心加固：增加保底起跳动力
+        const power = Math.pow(ratio, 1.4); 
+        shark.vx = W*0.008 + power * (W*0.032); 
+        shark.vy = -H*0.013 - power * (H*0.020); 
         gameState = 'flying';
     }
 };
@@ -300,7 +279,6 @@ window.addEventListener('mouseup', eHold);
 
 const savedL = localStorage.getItem('shark_level') || 1;
 document.getElementById('challenge-info').textContent = `当前进度：STAGE ${savedL}`;
-
 draw();
 </script>
 </body>
