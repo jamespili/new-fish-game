@@ -10,25 +10,21 @@
         #gc { position: relative; width: 100%; height: 100%; background: #050a12; overflow: hidden; }
         canvas { display: block; width: 100%; height: 100%; }
         
-        /* 顶部 UI */
-        #ui { position: absolute; top: 50px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; pointer-events: none; z-index: 10; transition: 0.3s; }
-        .stat { background: rgba(0, 136, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(0, 136, 255, 0.3); border-radius: 20px; padding: 6px 15px; font-size: 11px; color: #4db8ff; }
+        #ui { position: absolute; top: 50px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; pointer-events: none; z-index: 10; opacity: 0; transition: 0.5s; }
+        .stat { background: rgba(0, 136, 255, 0.15); backdrop-filter: blur(12px); border: 1px solid rgba(0, 136, 255, 0.3); border-radius: 20px; padding: 6px 15px; font-size: 11px; color: #4db8ff; }
         .stat span { color: #fff; font-weight: bold; margin-left: 4px; font-size: 14px; }
 
-        /* 主菜单 */
         #menu { position: absolute; inset: 0; background: rgba(3,8,16,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(15px); }
-        #menu h1 { font-size: 40px; margin-bottom: 40px; text-shadow: 0 0 20px #0088ff; font-style: italic; }
-        .mode-btn { width: 220px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,136,255,0.5); padding: 20px; border-radius: 15px; margin: 10px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .mode-btn:active { transform: scale(0.95); background: rgba(0,136,255,0.2); }
-        .mode-btn h3 { font-size: 20px; color: #fff; margin-bottom: 5px; }
-        .mode-btn p { font-size: 12px; color: #7aafd4; }
+        #menu h1 { font-size: 36px; margin-bottom: 30px; text-shadow: 0 0 20px #0088ff; font-style: italic; letter-spacing: 2px; }
+        .mode-btn { width: 240px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,136,255,0.4); padding: 18px; border-radius: 15px; margin: 10px; text-align: center; cursor: pointer; }
+        .mode-btn h3 { font-size: 18px; color: #fff; margin-bottom: 4px; }
+        .mode-btn p { font-size: 11px; color: #7aafd4; }
 
-        /* 游戏结束/过关 弹窗 */
-        #msg { position: absolute; inset: 0; background: rgba(3,8,16,0.96); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 150; text-align: center; }
-        #msg h2 { font-size: 30px; margin-bottom: 10px; }
-        #msg button { background: #0088ff; color: #fff; border: none; border-radius: 30px; padding: 15px 60px; font-size: 16px; font-weight: bold; margin-top: 25px; }
+        #msg { position: absolute; inset: 0; background: rgba(3,8,16,0.98); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 150; text-align: center; backdrop-filter: blur(10px); }
+        #msg h2 { font-size: 28px; margin-bottom: 12px; color: #fff; }
+        #msg button { background: linear-gradient(135deg, #0088ff, #0044bb); color: #fff; border: none; border-radius: 30px; padding: 15px 60px; font-size: 16px; font-weight: bold; margin-top: 20px; }
         
-        #hint { position: absolute; bottom: 40px; width: 100%; text-align: center; color: rgba(77,184,255,0.3); font-size: 11px; letter-spacing: 1px; }
+        #hint { position: absolute; bottom: 50px; width: 100%; text-align: center; color: rgba(77,184,255,0.3); font-size: 12px; letter-spacing: 1px; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -37,15 +33,15 @@
         <h1>SHARK ⚡️ DASH</h1>
         <div class="mode-btn" onclick="startMode('endless')">
             <h3>无尽模式</h3>
-            <p>无限深渊，挑战最高纪录</p >
+            <p>挑战极限深渊</p >
         </div>
         <div class="mode-btn" onclick="startMode('challenge')">
             <h3>挑战模式</h3>
-            <p id="challenge-info">共40关 · 当前第 1 关</p >
+            <p id="challenge-info">加载进度中...</p >
         </div>
     </div>
 
-    <div id="ui" style="opacity: 0;">
+    <div id="ui">
         <div class="stat"><span id="mode-label">ENDLESS</span></div>
         <div class="stat">SCORE <span id="sc">0</span></div>
         <div class="stat">BEST <span id="bs">0</span></div>
@@ -55,48 +51,43 @@
 
     <div id="msg">
         <h2 id="mt">SHARK LOST</h2>
-        <p id="mb">深海中潜伏着危险...</p >
+        <p id="mb">游戏结束</p >
         <button id="msg-btn" onclick="handleMsgBtn()">继续</button>
-        <button style="background:transparent; border:1px solid #444; margin-top:10px;" onclick="location.reload()">返回主菜单</button>
+        <button style="background:transparent; border:1px solid #444; margin-top:12px; font-size:14px; padding:10px 30px;" onclick="location.reload()">退出</button>
     </div>
     
-    <div id="hint">点触起跳 · 闪电冲刺</div>
+    <div id="hint">点触起跳 · 长按蓄力</div>
 </div>
 
 <script>
-/**
- * ⚡️ 闪电鲨 v12 核心代码库
- */
 const cv = document.getElementById('cv'), cx = cv.getContext('2d');
 const scEl = document.getElementById('sc'), bsEl = document.getElementById('bs'), msg = document.getElementById('msg'), mt = document.getElementById('mt'), mb = document.getElementById('mb');
 
-// 游戏状态
 let W, H, time = 0, gameState = 'menu', gameMode = 'endless';
 let score = 0, best = 0, currentLevel = 1, targetScore = 0;
 let holding = false, holdStart = 0;
 let tanks = [], shark, particles = [], camX = 0, targetCamX = 0;
 
-// 场景配置
 const THEMES = [
-    { range: [1, 10], bg: ['#020509', '#081326'], water: '#00ccff', name: '深海' },
-    { range: [11, 20], bg: ['#010c0b', '#052a26'], water: '#00ffaa', name: '碧波' },
-    { range: [21, 30], bg: ['#0d0212', '#2a053d'], water: '#bb66ff', name: '暮色' },
-    { range: [31, 40], bg: ['#120202', '#3d0505'], water: '#ff4400', name: '熔岩' }
+    { r: [1, 10], bg: ['#020509', '#081326'], water: '#00ccff' },
+    { r: [11, 20], bg: ['#010c0b', '#052a26'], water: '#00ffaa' },
+    { r: [21, 30], bg: ['#0d0212', '#2a053d'], water: '#bb66ff' },
+    { r: [31, 40], bg: ['#120202', '#3d0505'], water: '#ff4400' }
 ];
 
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
-
 function playSfx(f1, f2, dur) {
-    if(!audioCtx) audioCtx = new AudioCtx();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.setValueAtTime(f1, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(f2, audioCtx.currentTime + dur);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + dur);
-    osc.start(); osc.stop(audioCtx.currentTime + dur);
+    try {
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(f1, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(f2, audioCtx.currentTime + dur);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + dur);
+        osc.start(); osc.stop(audioCtx.currentTime + dur);
+    } catch(e){}
 }
 
 function resize() {
@@ -105,53 +96,53 @@ function resize() {
     cv.width = W * dpr; cv.height = H * dpr;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
-window.addEventListener('resize', resize); resize();
+window.addEventListener('resize', resize);
+resize();
 
-// 获取当前关卡/模式的主题
 function getTheme() {
     const lv = gameMode === 'endless' ? 1 : currentLevel;
-    return THEMES.find(t => lv >= t.range[0] && lv <= t.range[1]) || THEMES[0];
+    return THEMES.find(t => lv >= t.r[0] && lv <= t.r[1]) || THEMES[0];
 }
 
 function makeTank(x) {
     const theme = getTheme();
-    // 挑战模式：难度随关卡增加
     let baseW = W * 0.24, baseH = H * 0.12;
-    if(gameMode === 'challenge') {
-        baseW -= (currentLevel * 1.5); // 关卡越高 鱼缸越窄
-    }
-    return { x, y: H - baseH - 120, w: Math.max(baseW, 40), h: baseH, color: theme.water, offset: Math.random()*20 };
+    if(gameMode === 'challenge') baseW -= Math.min(currentLevel * 1.2, baseW * 0.5);
+    return { x, y: H - baseH - 120, w: Math.max(baseW, 50), h: baseH, color: theme.water, offset: Math.random()*20 };
 }
 
 function spawnNext() {
     const last = tanks[tanks.length-1];
-    let minGap = W * 0.35, maxGap = W * 0.55;
-    
+    let minG = W * 0.35, maxG = W * 0.55;
     if(gameMode === 'challenge') {
-        minGap += (currentLevel * 2); 
-        maxGap += (currentLevel * 3);
+        minG += Math.min(currentLevel * 2, W * 0.2);
+        maxG += Math.min(currentLevel * 3, W * 0.3);
     }
-    const gap = minGap + Math.random() * (maxGap - minGap);
+    const gap = minG + Math.random() * (maxG - minG);
     tanks.push(makeTank(last.x + last.w + gap));
 }
 
 function startMode(mode) {
     gameMode = mode;
-    gameState = 'playing';
     document.getElementById('menu').style.display = 'none';
     document.getElementById('ui').style.opacity = '1';
     document.getElementById('mode-label').textContent = mode.toUpperCase();
     
     if(mode === 'challenge') {
         currentLevel = parseInt(localStorage.getItem('shark_level')) || 1;
-        targetScore = 3 + Math.floor(currentLevel/2); // 每关需要跳过的缸数
+        targetScore = 3 + Math.floor(currentLevel/2);
+    } else {
+        best = localStorage.getItem('shark_best') || 0;
+        bsEl.textContent = best;
     }
+    
+    gameState = 'playing';
     initGame();
 }
 
 function initGame() {
-    score = 0; scEl.textContent = score;
-    tanks = [makeTank(W * 0.1)];
+    score = 0; scEl.textContent = 0;
+    tanks = [makeTank(W * 0.12)];
     for(let i=0; i<5; i++) spawnNext();
     shark = { x: tanks[0].x + tanks[0].w/2, y: tanks[0].y - 12, vx: 0, vy: 0, angle: 0, tail: 0 };
     camX = 0; targetCamX = 0; particles = [];
@@ -171,7 +162,7 @@ function handleMsgBtn() {
 
 function drawShark(x, y, ang, tail, isIdle) {
     cx.save();
-    const swim = isIdle ? Math.sin(time*0.1)*4 : 0;
+    const swim = isIdle ? Math.sin(time*0.1)*3.5 : 0;
     cx.translate(x, y + swim); cx.rotate(ang);
     const theme = getTheme();
     const g = cx.createLinearGradient(-18, 0, 18, 0);
@@ -188,22 +179,20 @@ function drawShark(x, y, ang, tail, isIdle) {
 function draw() {
     time++;
     const theme = getTheme();
-    
-    // 背景渐变
     const bgGrd = cx.createLinearGradient(0,0,0,H);
     bgGrd.addColorStop(0, theme.bg[0]); bgGrd.addColorStop(1, theme.bg[1]);
     cx.fillStyle = bgGrd; cx.fillRect(0,0,W,H);
     
     if(gameState === 'playing') {
-        if(shark.vx !== 0 || shark.vy !== 0) { // 飞行中
+        if(shark.vx !== 0 || shark.vy !== 0) {
             shark.x += shark.vx; shark.y += shark.vy; shark.vy += 0.48;
             shark.angle = Math.atan2(shark.vy, shark.vx);
             shark.tail += 0.4;
-            targetCamX = Math.max(camX, shark.x - W * 0.3);
+            targetCamX = Math.max(camX, shark.x - W * 0.35);
 
             tanks.forEach((t, i) => {
                 if(shark.vy > 0 && shark.x > t.x && shark.x < t.x+t.w && shark.y > t.y-10 && shark.y < t.y+30) {
-                    playSfx(150, 80, 0.3);
+                    playSfx(180, 100, 0.2);
                     for(let k=0; k<8; k++) particles.push({x:shark.x, y:t.y, vx:(Math.random()-0.5)*5, vy:-Math.random()*4, o:1});
                     shark.y = t.y - 12; shark.vx = 0; shark.vy = 0; shark.angle = 0;
                     
@@ -211,38 +200,36 @@ function draw() {
                         score += i; scEl.textContent = score;
                         if(gameMode === 'endless') {
                             if(score > best) { best=score; bsEl.textContent=best; localStorage.setItem('shark_best', best); }
-                        } else if(score >= targetScore) { // 挑战模式 过关
+                        } else if(score >= targetScore) {
                             gameState = 'win';
                             mt.textContent = 'LEVEL CLEAR';
-                            mb.textContent = `第 ${currentLevel} 关挑战成功！\n下一关难度将提升。`;
-                            document.getElementById('msg-btn').textContent = '下一关';
+                            mb.textContent = `第 ${currentLevel} 关挑战成功！`;
                             msg.style.display = 'flex';
                         }
                         tanks.splice(0, i); while(tanks.length<6) spawnNext();
                     }
                 }
             });
-            if(shark.y > H + 100 || shark.x < camX - 100) {
+            if(shark.y > H + 80 || shark.x < camX - 120) {
                 gameState = 'dead';
                 mt.textContent = 'SHARK LOST';
-                mb.textContent = gameMode === 'challenge' ? `在第 ${currentLevel} 关折羽沉沙...` : `深海迷航，本次得分 ${score}`;
-                document.getElementById('msg-btn').textContent = '重试';
+                mb.textContent = `你在深海迷失了方向...`;
                 msg.style.display = 'flex';
             }
-        } else { shark.tail += 0.06; }
+        } else { shark.tail += 0.08; }
     }
     
     camX += (targetCamX - camX) * 0.1;
     cx.save(); cx.translate(-camX, 0);
     
     tanks.forEach(t => {
-        cx.strokeStyle = t.color; cx.lineWidth = 3; cx.shadowBlur = 15; cx.shadowColor = t.color;
+        cx.strokeStyle = t.color; cx.lineWidth = 3; cx.shadowBlur = 12; cx.shadowColor = t.color;
         cx.strokeRect(t.x, t.y, t.w, t.h);
         cx.save(); cx.beginPath(); cx.rect(t.x, t.y, t.w, t.h); cx.clip();
-        cx.fillStyle = 'rgba(255,255,255,0.1)';
+        cx.fillStyle = 'rgba(255,255,255,0.12)';
         cx.beginPath(); cx.moveTo(t.x, t.y + t.h);
         for(let tx=0; tx<=t.w; tx+=5) {
-            const ty = Math.sin(tx*0.06 + time*0.05 + t.offset) * 3;
+            const ty = Math.sin(tx*0.06 + time*0.06 + t.offset) * 3.5;
             cx.lineTo(t.x + tx, t.y + 10 + ty);
         }
         cx.lineTo(t.x+t.w, t.y+t.h); cx.fill();
@@ -250,10 +237,10 @@ function draw() {
     });
     
     particles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; p.o -= 0.02;
+        p.x += p.vx; p.y += p.vy; p.o -= 0.025;
         if(p.o <= 0) particles.splice(i, 1);
         cx.fillStyle = `rgba(255,255,255,${p.o})`;
-        cx.beginPath(); cx.arc(p.x, p.y, 2, 0, Math.PI*2); cx.fill();
+        cx.beginPath(); cx.arc(p.x, p.y, 2.5, 0, Math.PI*2); cx.fill();
     });
     
     drawShark(shark.x, shark.y, shark.angle, shark.tail, shark.vx===0);
@@ -272,10 +259,10 @@ const startHold = (e) => {
 };
 const endHold = () => {
     if(holding) {
-        holding = false; playSfx(200, 500, 0.2);
+        holding = false; playSfx(220, 500, 0.15);
         const p = Math.min((Date.now()-holdStart)/1400, 1);
-        shark.vx = W*0.015 + p * (W*0.038);
-        shark.vy = -H*0.012 - p * (H*0.022);
+        shark.vx = W*0.018 + p * (W*0.032);
+        shark.vy = -H*0.014 - p * (H*0.018);
     }
 };
 
@@ -284,10 +271,9 @@ window.addEventListener('touchend', endHold);
 cv.addEventListener('mousedown', startHold);
 window.addEventListener('mouseup', endHold);
 
-// 初始化数据显示
-best = localStorage.getItem('shark_best') || 0; bsEl.textContent = best;
-const savedLevel = localStorage.getItem('shark_level') || 1;
-document.getElementById('challenge-info').textContent = `共40关 · 当前第 ${savedLevel} 关`;
+// 初始数据加载
+const savedL = localStorage.getItem('shark_level') || 1;
+document.getElementById('challenge-info').textContent = `当前进度：第 ${savedL} 关`;
 
 draw();
 </script>
